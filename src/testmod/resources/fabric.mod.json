@@ -19,7 +19,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.github.quiltservertools.mcdiscordreserializer.TestMod"
+      "io.github.quiltservertools.mcdiscordreserializer.TestMod"
     ]
   },
 
