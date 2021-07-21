@@ -1,14 +1,16 @@
 plugins {
+    id 'fabric-loom' version '0.8-SNAPSHOT'
     id 'com.github.johnrengelman.shadow' version '7.0.0'
-    id 'io.franzbecker.gradle-lombok' version '3.2.0'
     id 'org.cadixdev.licenser' version '0.6.0'
-    id 'java-library'
+    id 'maven-publish'
 }
 
-group 'dev.vankka'
-version '4.2.2-SNAPSHOT'
+sourceCompatibility = JavaVersion.VERSION_16
+targetCompatibility = JavaVersion.VERSION_16
 
-sourceCompatibility = 1.8
+archivesBaseName = project.archives_base_name
+version = project.mod_version
+group = project.maven_group
 
 repositories {
     mavenCentral()
@@ -20,6 +22,11 @@ repositories {
     }
 }
 
+configurations {
+    shade
+    implementation.extendsFrom shade
+}
+
 javadoc {
     options.memberLevel = JavadocMemberLevel.PUBLIC
     options.author()
@@ -27,20 +34,6 @@ javadoc {
     options.addBooleanOption('html5', true)
     options.addBooleanOption('Xdoclint:none', true)
     failOnError = false
-}
-
-lombok {
-    version = '1.18.10'
-    sha256 = ''
-}
-
-test {
-    reports {
-        junitXml.enabled = false
-        html.enabled = true
-    }
-    ignoreFailures = true
-    subprojects.each { dependsOn(it.path + ':test') }
 }
 
 license {
@@ -54,20 +47,74 @@ license {
     include '**/*.java' // only java files
 }
 
+sourceSets {
+    testmod {
+        compileClasspath += main.compileClasspath
+        runtimeClasspath += main.runtimeClasspath
+    }
+}
+
 dependencies {
-    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
-    api group: 'net.kyori', name: 'adventure-api', version: '4.1.0'
-    api group: 'dev.vankka', name: 'SimpleAST', version: '2.2.7'
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    shade group: 'dev.vankka', name: 'SimpleAST', version: '2.2.7'
+
+    testmodImplementation sourceSets.main.output
+}
+
+loom {
+    runs {
+        testmodClient {
+            client()
+            ideConfigGenerated project.rootProject == project
+            name = "Testmod Client"
+            source sourceSets.testmod
+        }
+        testmodServer {
+            server()
+            ideConfigGenerated project.rootProject == project
+            name = "Testmod Server"
+            source sourceSets.testmod
+        }
+    }
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    // ensure that the encoding is set to UTF-8, no matter what the system default is
+    // this fixes some edge cases with special characters not displaying correctly
+    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+    // If Javadoc is generated, this must be specified in that task too.
+    it.options.encoding = "UTF-8"
+
+    // Minecraft 1.17 (21w19a) upwards uses Java 16.
+    it.options.release = 16
 }
 
 jar {
     dependsOn licenseFormat
-    finalizedBy shadowJar
 }
 
 shadowJar {
-    configurations = [project.configurations.runtimeClasspath]
-    classifier 'shaded'
+    from "LICENSE"
+    from sourceSets.main.output
+
+    configurations = [ project.configurations.shade ]
+    classifier = "dev-all"
+
+    def relocPath = "com.github.quiltservertools.mcdiscordreserializer.libs"
+    relocate "dev.vankka", relocPath + "dev.vankka"
 }
 
 java {
@@ -75,69 +122,65 @@ java {
     withSourcesJar()
 }
 
-if (System.getenv('SONATYPE_KEY') == null && !project.hasProperty("signing.keyId")) {
-    // Don't even bother with signing/publishing if neither of these are set
-    return
+remapJar {
+    dependsOn(shadowJar)
+    input.set(shadowJar.archivePath)
 }
 
-task publishProject {
-    apply plugin: 'maven-publish'
-    apply plugin: 'signing'
+artifacts {
+    archives jar, sourcesJar, javadocJar
+}
 
-    dependsOn tasks.build
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact remapJar
+            artifact sourcesJar
+            artifact javadocJar
 
-    publishing {
-        publications {
-            maven(MavenPublication) {
-                from components.java
+            pom {
+                name = 'MC Discord Reserializer'
+                artifactId = archivesBaseName
+                packaging = 'jar'
+                // optionally artifactId can be defined here
+                description = 'A library for transcoding between Minecraft and Discord.'
+                url = 'https://github.com/PotatoPresident/MCDiscordReserializer'
 
-                pom {
-                    name = project.name
-                    packaging = 'jar'
-                    description = 'A library for transcoding between Minecraft and Discord. '
-                    url = 'https://github.com/Vankka/MCDiscordReserializer'
+                scm {
+                    connection = 'scm:git:git://github.com/PotatoPresident/MCDiscordReserializer.git'
+                    developerConnection = 'scm:git:ssh://github.com/PotatoPresident/MCDiscordReserializer.git'
+                    url = 'https://github.com/PotatoPresident/MCDiscordReserializer.git'
+                }
 
-                    scm {
-                        connection = 'scm:git:https://github.com/Vankka/MCDiscordReserializer.git'
-                        developerConnection = 'scm:git:https://github.com/Vankka/MCDiscordReserializer.git'
-                        url = 'https://github.com/Vankka/MCDiscordReserializer'
-                    }
-
-                    licenses {
-                        license {
-                            name = 'GNU General Public License, Version 3.0'
-                            url = 'https://www.gnu.org/licenses/gpl-3.0.txt'
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id = 'Vankka'
-                        }
+                licenses {
+                    license {
+                        name = 'GNU General Public License, Version 3.0'
+                        url = 'https://www.gnu.org/licenses/gpl-3.0.txt'
                     }
                 }
-            }
-        }
 
-        signing {
-            sign publishing.publications.maven
-
-            def key = System.getenv('SONATYPE_KEY')
-            if (key != null) {
-                useInMemoryPgpKeys(key, System.getenv('SONATYPE_KEY_PASS'))
-            }
-        }
-
-        repositories {
-            maven {
-                credentials {
-                    username findProperty('ossrhUsername')
-                    password findProperty('ossrhPassword')
+                developers {
+                    developer {
+                        id = 'Potatoboy'
+                    }
                 }
-                url version.endsWith('-SNAPSHOT') ? 'https://s01.oss.sonatype.org/content/repositories/snapshots/' : 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
             }
         }
     }
 
-    finalizedBy publish
+    repositories {
+        mavenLocal()
+        def ossrhUsername = "Potatoboy9999"
+        def ossrhPassword = (project.hasProperty("ossrhPassword") ? project.property("ossrhPassword") : System.getenv("OSSRH_PASSWORD")) as String
+        maven {
+            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
+            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            credentials(PasswordCredentials) {
+                username = ossrhUsername
+                password = ossrhPassword
+            }
+            name = "mavenCentral"
+        }
+    }
 }

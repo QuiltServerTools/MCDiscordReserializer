@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "mc_discord_reserializer",
+  "version": "${version}",
+
+  "name": "MC Discord Reserializer",
+  "description": "A library for transcoding between Minecraft and Discord.",
+  "authors": [
+    "Potatoboy9999"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+
+  "license": "GPL",
+  "icon": "assets/modid/icon.png",
+
+  "environment": "*",
+
+  "depends": {
+    "fabricloader": ">=0.11.3",
+    "minecraft": "1.17.x",
+    "java": ">=16"
+  }
+}
