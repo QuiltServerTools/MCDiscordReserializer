@@ -110,10 +110,10 @@ shadowJar {
     from "LICENSE"
     from sourceSets.main.output
 
-    configurations = [ project.configurations.shade ]
+    configurations = [project.configurations.shade]
     classifier = "dev-all"
 
-    def relocPath = "com.github.quiltservertools.mcdiscordreserializer.libs"
+    def relocPath = "io.github.quiltservertools.mcdiscordreserializer.libs."
     relocate "dev.vankka", relocPath + "dev.vankka"
 }
 
@@ -127,60 +127,33 @@ remapJar {
     input.set(shadowJar.archivePath)
 }
 
-artifacts {
-    archives jar, sourcesJar, javadocJar
-}
+def env = System.getenv()
 
+// configure the maven publication
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact remapJar
-            artifact sourcesJar
-            artifact javadocJar
-
-            pom {
-                name = 'MC Discord Reserializer'
-                artifactId = archivesBaseName
-                packaging = 'jar'
-                // optionally artifactId can be defined here
-                description = 'A library for transcoding between Minecraft and Discord.'
-                url = 'https://github.com/PotatoPresident/MCDiscordReserializer'
-
-                scm {
-                    connection = 'scm:git:git://github.com/PotatoPresident/MCDiscordReserializer.git'
-                    developerConnection = 'scm:git:ssh://github.com/PotatoPresident/MCDiscordReserializer.git'
-                    url = 'https://github.com/PotatoPresident/MCDiscordReserializer.git'
-                }
-
-                licenses {
-                    license {
-                        name = 'GNU General Public License, Version 3.0'
-                        url = 'https://www.gnu.org/licenses/gpl-3.0.txt'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'Potatoboy'
-                    }
-                }
+            // add all the jars that should be included when publishing to maven
+            artifact(remapJar) {
+                builtBy remapJar
+            }
+            artifact(sourcesJar) {
+                builtBy remapSourcesJar
             }
         }
     }
 
     repositories {
-        mavenLocal()
-        def ossrhUsername = "Potatoboy9999"
-        def ossrhPassword = (project.hasProperty("ossrhPassword") ? project.property("ossrhPassword") : System.getenv("OSSRH_PASSWORD")) as String
-        maven {
-            def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-            def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-            credentials(PasswordCredentials) {
-                username = ossrhUsername
-                password = ossrhPassword
+        if (env.MAVEN_URL) {
+            maven {
+                credentials {
+                    username env.MAVEN_USERNAME
+                    password env.MAVEN_PASSWORD
+                }
+                url env.MAVEN_URL
             }
-            name = "mavenCentral"
+        } else {
+            mavenLocal()
         }
     }
 }
