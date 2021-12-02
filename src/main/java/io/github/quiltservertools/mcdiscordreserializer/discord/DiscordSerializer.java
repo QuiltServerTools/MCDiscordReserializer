@@ -20,10 +20,7 @@ package io.github.quiltservertools.mcdiscordreserializer.discord;
 
 import io.github.quiltservertools.mcdiscordreserializer.rules.DiscordMarkdownRules;
 import io.github.quiltservertools.mcdiscordreserializer.text.Text;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.KeybindText;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
@@ -248,23 +245,23 @@ public class DiscordSerializer {
                                       @NotNull final Text text, @NotNull final DiscordSerializerOptions serializerOptions) {
         LinkedList<Text> output = new LinkedList<>(input);
 
-        String content = component.getString();
+        String content;
 
-        /* TODO maybe fix?
-        if (component instanceof KeybindText) {
-            content = keybindProvider.apply((KeybindText) component);
-        } else if (component instanceof ScoreText) {
-            content = ((ScoreText) component).value();
-        } else if (component instanceof ScoreText) {
-            content = ((ScoreText) component).pattern();
+        // TODO maybe fix?
+        if (component instanceof KeybindText keybindText) {
+            content = keybindProvider.apply(keybindText);
+        } else if (component instanceof ScoreText scoreText) {
+            content = scoreText.getObjective();
+        } else if (component instanceof SelectorText selectorText) {
+            content = selectorText.getPattern();
         } else if (component instanceof LiteralText) {
-            content = ((LiteralText) component).asString();
-        } else if (component instanceof TranslatableText) {
-            content = translationProvider.apply(((TranslatableText) component));
+            content = component.asString();
+        } else if (component instanceof TranslatableText translatableText) {
+            content = translationProvider.apply(translatableText);
         } else {
             content = "";
         }
-         */
+
 
         ClickEvent clickEvent = component.getStyle().getClickEvent();
         if (serializerOptions.isEmbedLinks() && clickEvent != null && clickEvent.getAction() == ClickEvent.Action.OPEN_URL) {

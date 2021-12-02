@@ -18,6 +18,7 @@
 
 package io.github.quiltservertools.mcdiscordreserializer;
 
+import io.github.quiltservertools.mcdiscordreserializer.discord.DiscordSerializer;
 import io.github.quiltservertools.mcdiscordreserializer.minecraft.MinecraftSerializer;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.api.ModInitializer;
@@ -36,6 +37,9 @@ public class TestMod implements ModInitializer {
                                     .executes(context -> {
                                         var string = StringArgumentType.getString(context, "markdown");
                                         context.getSource().sendFeedback(MinecraftSerializer.INSTANCE.serialize(string), false);
+                                        context.getSource().sendFeedback(Text.of(DiscordSerializer.INSTANCE.serialize(
+                                                MinecraftSerializer.INSTANCE.serialize(string)
+                                        )), false);
 
                                         return 0;
                                     }))
