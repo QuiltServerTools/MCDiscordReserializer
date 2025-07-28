@@ -1,7 +1,7 @@
 # MCDiscordReserializer 
 
 [![Maven Central](https://img.shields.io/maven-central/v/dev.vankka/mcdiscordreserializer?label=release)](https://central.sonatype.com/search?q=g%3Adev.vankka+a%3Amcdiscordreserializer)
-[![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/dev.vankka/mcdiscordreserializer?label=dev&server=https%3A%2F%2Fs01.oss.sonatype.org)](https://s01.oss.sonatype.org/#view-repositories;snapshots~browsestorage~dev/vankka)
+![Sonatype (Snapshots)](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fcentral.sonatype.com%2Frepository%2Fmaven-snapshots%2Fdev%2Fvankka%2Fmcdiscordreserializer%2Fmaven-metadata.xml&label=snapshot)
 
 A library for transcoding between Minecraft and Discord.
 
@@ -14,12 +14,9 @@ and is translated using a fork of [Discord's SimpleAST](https://github.com/disco
 ## Dependency information
 
 ### Version
-| Text/Adventure Version | MCDiscordReserializer version | Maintained |
-|----|----|----|
-| 4.x.x | 4.x.x | ✔ |
-| 3.x.x | 3.x.x | ️ |
-
-### Versions 4.2.0 and up
+| Adventure Version | MCDiscordReserializer version | Maintained |
+|-------------------|-------------------------------|------------|
+| 4.x.x             | 4.x.x                         | ✔          |
 
 #### Maven
 ```xml
@@ -42,42 +39,6 @@ dependencies {
     implementation 'dev.vankka:mcdiscordreserializer:4.3.0'
 }
 ```
-
-<details>
-    <summary>Versions Before 4.2.0</summary>
-
-    #### Maven
-    ```xml
-    <repositories>
-        <repository>
-            <id>Vankka-Nexus</id>
-            <url>https://nexus.vankka.dev/repository/maven-public/</url>
-        </repository>
-    </repositories>
-    
-    <dependencies>
-        <dependency>
-            <groupId>dev.vankka</groupId>
-            <artifactId>MCDiscordReserializer</artifactId>
-            <version>3.0.1</version>
-        </dependency>
-    </dependencies>
-    ```
-    
-    #### Gradle
-    ```groovy
-    repositories {
-        maven { 
-          id 'Vankka-Nexus'
-          url 'https://nexus.vankka.dev/repository/maven-public/' 
-        }
-    }
-    
-    dependencies {
-        implementation 'dev.vankka:MCDiscordReserializer:3.0.1'
-    }
-    ```
-</details>
 
 
 ## Basic usage
