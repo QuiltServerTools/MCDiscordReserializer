@@ -140,11 +140,20 @@ public class DiscordSerializer implements ComponentEncoder<Component, String> {
             // Markdown doesn't apply inside links
             if (serializerOptions.isEscapeMarkdown() && !LINK_PATTERN.matcher(stringBuilder).find()) {
                 content = content
+                        // Bold / Italics
                         .replace("*", "\\*")
+                        // Strikethrough
                         .replace("~", "\\~")
+                        // Underscore
                         .replace("_", "\\_")
+                        // Code string / code block
                         .replace("`", "\\`")
-                        .replace("|", "\\|");
+                        // Spoiler
+                        .replace("|", "\\|")
+                        // Emoji
+                        .replace(":", "\\:")
+                        // Masked link
+                        .replace("[", "\\[");
             }
 
             String openUrl = text.getOpenUrl();
