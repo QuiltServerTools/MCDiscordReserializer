@@ -1,6 +1,6 @@
 /*
  * MCDiscordReserializer: A library for transcoding between Minecraft and Discord.
- * Copyright (C) 2021-2025 Vankka
+ * Copyright (C) 2021-2026 Vankka
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -242,9 +242,9 @@ public class DiscordSerializer implements ComponentEncoder<Component, String> {
                 text.setStrikethrough(strikethrough == TextDecoration.State.TRUE);
             }
 
-            ClickEvent clickEvent = style.clickEvent();
+            ClickEvent<?> clickEvent = style.clickEvent();
             if (gatherLinks && clickEvent != null && clickEvent.action() == ClickEvent.Action.OPEN_URL) {
-                text.setOpenUrl(clickEvent.value());
+                text.setOpenUrl(((ClickEvent.Payload.Text)clickEvent.payload()).value());
             }
 
             HoverEvent<?> hoverEvent = style.hoverEvent();
